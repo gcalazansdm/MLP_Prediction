@@ -12,9 +12,10 @@ import sys
 import os
 
 #nome do arquivo hf5 com os pesos da rede
-h5_name = "SavedModels\\Rede"
+h5_name = os.path.join(os.getcwd(),"SavedModels/Rede")
+
 #path para os graficos
-path_graphs = "C:\\Users\\Pichau\\Documents\\git\\MLP_PREDICTION\\Graphs"
+path_graphs = os.path.join(os.getcwd(),"Graphs")
 
 def randomize(dataset, labels):
     # Generate the permutation index array.
@@ -51,7 +52,7 @@ def calculateErrorPerNeuron(values,indexes):
     mape_error = np.mean(np.divide(np.absolute(values - indexes),np.absolute(indexes))*100)
     return [acummulated_error,mse_error,mape_error]
         
-def train(network, train_base,test_base,val_base,batch_size=20,num_epochs_without_change=20):
+def train(network, train_base,test_base,val_base,batch_size=20,num_epochs_without_change=500):
     start_time = datetime.datetime.now()
     best_loss = np.inf
     Stop = False
@@ -62,6 +63,7 @@ def train(network, train_base,test_base,val_base,batch_size=20,num_epochs_withou
     labels = ["Por neuronio","MSE","MAPE"]
     oldLabels = [[],[],[]]
     oldValLabels = [[],[],[]]
+    oldTrainLabels = [[],[],[]]
     while(not Stop):
         
         epoch_start =  datetime.datetime.now()
@@ -81,7 +83,11 @@ def train(network, train_base,test_base,val_base,batch_size=20,num_epochs_withou
             train_loss = network.train_on_batch(x_train, x_test)
             for index in range(0, len(train_loss)-1):
                 loss[index] += train_loss[index+1]
-            
+    
+        results_train = network.predict(train_elems)
+        tLoss = calculateErrorPerNeuron(results_train,train_labels)
+        for index in range(0, len(tLoss)):
+            oldTrainLabels[index].append(tLoss[index])  
         print()
                
         test_values  = test_base[0]
@@ -111,8 +117,8 @@ def train(network, train_base,test_base,val_base,batch_size=20,num_epochs_withou
         print ("Treino -> %d  Epoch | num no changes %d | total time: %s %s" % (h+1,num_error_starvation,epoch_time, elapsed_time))
     
         for i in range(0,len(labels)):
-            plt.plot(oldLabels[i])
-            plt.plot(oldValLabels[i])
+            plt.plot(oldTrainLabels[i],'r',label='Treino')
+            plt.plot(oldLabels[i],'b',label='Teste')
             plt.ylabel(labels[i])
             plt.savefig(os.path.join(path_graphs,labels[i] +'.png'))
             plt.clf()
@@ -123,7 +129,7 @@ def save_weights(model,name):
     model.save_weights(str(name)+".h5") 
 
 def trysave(test_loss,network,epoch,best_loss):        
-    targetloss = test_loss[1]
+    targetloss = test_loss[2]
     rLoss = best_loss
     if(targetloss > 0. and best_loss > targetloss):
         save_weights(network,h5_name)

@@ -9,8 +9,8 @@ from network import train,create_network
 from Statistics import normalize,unnormalize,MakeLag
 
 #pega o path
-dataset_path='C:\\Users\\Pichau\\Documents\\git\\MLP_PREDICTION\\Data\\Dados UBE.csv'
-answers_path='C:\\Users\\Pichau\\Documents\\git\\MLP_PREDICTION\\Data\\UBE_Results.csv'
+dataset_path='Data/Dados UBE.csv'
+answers_path='Data/UBE_Results.csv'
 
 #determina o numero de defasagens para o problema em questão
 number_of_lag=8
@@ -60,7 +60,7 @@ for name in range(0,12):
 new_result_sheet=new_result_sheet.drop(range(0,number_of_lag-1))
  
 X_train, X_temp, y_train, y_temp = train_test_split(new_sheet.values, new_result_sheet.values,test_size=0.25)
-
+'''
 temp_value = None
 temp_labels = None
 for i in range(0,len(min_values)):
@@ -77,12 +77,12 @@ for i in range(0,len(min_values)):
         temp_labels = np.concatenate((temp_labels,unormalized_label_vector),axis=1)    
 X_temp = temp_value
 y_temp = temp_labels   
-
+'''
 X_test, X_validation, y_test, y_validation = train_test_split(X_temp, y_temp,test_size=0.4)
 
     
 network = create_network(6*number_of_lag,64,12,Adam(0.001))
-train(network,(X_train,y_train),(X_test,y_test),(X_validation,y_validation))
+train(network,(X_train,y_train),(X_test,y_test),(X_validation,y_validation),num_epochs_without_change=100)
 
 #print(X_train.shape)
 #print(X_train)
