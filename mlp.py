@@ -1,7 +1,7 @@
 from sklearn.model_selection import train_test_split
-from keras.optimizers import Adam
+#from keras.optimizers import Adam
 
-import keras.backend as K
+#import keras.backend as K
 import pandas as reader
 import numpy as np
 
@@ -14,8 +14,8 @@ from constants import Answers_min_values
 from constants import Answers_max_values
 from constants import labels
 
-from network import train
-from network import create_network
+#from network import train
+#from network import create_network
 from Statistics import normalize
 from Statistics import unnormalize
 from Statistics import MakeLag

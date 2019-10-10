@@ -16,7 +16,10 @@ def MakeLag(array,ArrayName,alpha):
     return rVal
     
 def normalize_equation(outliers,elem):
-    return np.multiply(np.divide(np.subtract(elem,outliers[0]),np.subtract(outliers[1],outliers[0])),std_min)+(std_max-std_min)
+    print(outliers)
+    print(std_min)
+    print(std_max)
+    return np.multiply(np.divide(np.subtract(elem,outliers[0]),np.subtract(outliers[1],outliers[0])),(std_max-std_min))+std_min
 
 def normalize_6_rows(outliers,elem):
     temp_value = None
@@ -31,11 +34,15 @@ def normalize_6_rows(outliers,elem):
             temp_value = np.concatenate((temp_value,unormalized_vector),axis=1)   
     return temp_value
     
-def normalize(array):
-    array.rename_axis(None, inplace=True)
+def normalize(array,is_numpy=False):
+    if(not is_numpy):
+        array.rename_axis(None, inplace=True)
     min = array.min().min()*min_lag
     max = array.max().max()*max_lag
-    rValue = array.apply(functools.partial(normalize_equation,(min,max)))
+    if(is_numpy):
+        rValue = np.apply_along_axis(functools.partial(normalize_equation,(min,max)),0,array)
+    else:    
+        rValue = array.apply(functools.partial(normalize_equation,(min,max)))
     return rValue,min,max
 
 def unnormalize_6_rows(outliers,normalized_vector):
@@ -47,7 +54,7 @@ def unnormalize_6_rows(outliers,normalized_vector):
     return temp_value
     
 def unnormalize_unitary(outliers,elem):
-    return (elem-(std_max-std_min)/std_min)*(outliers[1]-outliers[0]) + outliers[0]
+    return (elem-std_min)/(std_max-std_min)*(outliers[1]-outliers[0]) + outliers[0]
 	
 def unnormalize(outliers,elem):
-    return np.multiply(np.divide(np.subtract(elem,(std_max-std_min)),std_min),np.subtract(outliers[1],outliers[0])) + outliers[0]
+    return np.multiply(np.divide(np.subtract(elem,std_min),std_max-std_min),np.subtract(outliers[1],outliers[0])) + outliers[0]
