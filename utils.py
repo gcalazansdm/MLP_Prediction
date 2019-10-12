@@ -20,12 +20,20 @@ def calculateErrorPerNeuron(values,indexes):
     mape_error = np.mean(np.divide(np.absolute(values - indexes),np.absolute(indexes))*100)
     return [acummulated_error,mse_error,mape_error]
 
-def test_network(base,network):
-    normalized_values = normalize_6_rows((min_values,max_values),base[0])
-    labels  = base[1]        
+def test_network(base,network,normalize = True):
+    normalized_values = None
+    if(normalize):
+        normalized_values = normalize_6_rows((min_values,max_values),base[0])
+    else:
+        normalized_values = base[0]
+    labels  = base[1]
     results = network.predict(normalized_values)
-    unnormalized_results = unnormalize_6_rows((Answers_min_values,Answers_max_values),results)
-    test_loss = calculateErrorPerNeuron(unnormalized_results,labels)
+    test_loss = None
+    if(normalize):  
+        unnormalized_results = unnormalize_6_rows((Answers_min_values,Answers_max_values),results)
+        test_loss = calculateErrorPerNeuron(unnormalized_results,labels)
+    else:
+        test_loss = calculateErrorPerNeuron(results,labels)
     return test_loss
     
 def randomize(dataset, labels):
@@ -60,14 +68,15 @@ def updateBar(progress,toolbar_width,loss,start=0):
 def save_weights(model,name):
     model.save_weights(str(name)+".h5") 
 
-def trysave(test_loss,network,epoch,best_loss):        
+def trysave(test_loss,network,epoch,best_loss,printing=False):        
     targetloss = test_loss[2]
     rLoss = best_loss
     if(targetloss > 0. and best_loss > targetloss):
         save_weights(network,h5_name)
-        print("Saving, Old Value: " + str(best_loss) +" & New value: " +str(targetloss) + " gain : "+str(abs(best_loss - targetloss) ) )
+        if(printing):
+            print("Saving, Old Value: " + str(best_loss) +" & New value: " +str(targetloss) + " gain : "+str(abs(best_loss - targetloss) ) )
         rLoss = targetloss
-    else:
+    elif(printing):
         print("Not saving, Old Value: " + str(best_loss) +" & New value: " +str(targetloss) + " lost : "+str(abs(targetloss-best_loss)) )
     return rLoss
     

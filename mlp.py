@@ -1,7 +1,5 @@
 from sklearn.model_selection import train_test_split
-#from keras.optimizers import Adam
-
-#import keras.backend as K
+from keras.regularizers import l2
 import pandas as reader
 import numpy as np
 
@@ -14,19 +12,28 @@ from constants import Answers_min_values
 from constants import Answers_max_values
 from constants import labels
 
-#from network import train
-#from network import create_network
+from network import force_brute_tunnig
+
+from utils import unnormalize_6_rows
+
 from Statistics import normalize
-from Statistics import unnormalize
+from Statistics import unnormalize,unnormalize_unitary
 from Statistics import MakeLag
 
+#def test():
+#    i = 6
+#    test = np.array([np.arange(i),np.arange(i,i*2),np.arange(i*2,i*3),np.arange(i*3,i*4),np.arange(i*4,i*5),np.arange(i*5,i*6)])
+#    print(test)
+#    ex,min_,max_ = normalize(test,is_numpy=True)
+#    print(ex, test,min_,max_)
+#    ex = unnormalize_unitary((min_,max_),ex)
+#    print(ex)
 #csv de entrada
 input_csv = reader.read_csv(dataset_path)
 result_csv = reader.read_csv(answers_path) 
 
 new_sheet = None
 new_result_sheet = None
-
 
 for name in labels:
     new_elem_sheet = MakeLag(input_csv,name,number_of_lag)
@@ -51,29 +58,16 @@ new_result_sheet=new_result_sheet.drop(range(0,number_of_lag-1))
  
 X_train, X_temp, y_train, y_temp = train_test_split(new_sheet.values, new_result_sheet.values,test_size=0.25)
 
-temp_value = None
-temp_labels = None
-for i in range(0,len(min_values)):
-    unormalized_vector = X_temp[:,i*number_of_lag:(i+1)*number_of_lag]
-    unormalized_vector = unnormalize((min_values[i],max_values[i]),unormalized_vector)
-    unormalized_label_vector = y_temp[:,i*number_of_lag:(i+1)*number_of_lag]
-    unormalized_label_vector = unnormalize((Answers_min_values[i],Answers_max_values[i]),unormalized_label_vector)
-
-    if(temp_value is None):
-        temp_value = unormalized_vector
-        temp_labels = unormalized_label_vector
-    else:
-        temp_value = np.concatenate((temp_value,unormalized_vector),axis=1)    
-        temp_labels = np.concatenate((temp_labels,unormalized_label_vector),axis=1)    
-X_temp = temp_value
-y_temp = temp_labels
+X_temp = unnormalize_6_rows((min_values,max_values),X_temp,True)
+y_temp = unnormalize_6_rows((Answers_min_values,Answers_max_values),y_temp)
 
 X_test, X_validation, y_test, y_validation = train_test_split(X_temp, y_temp,test_size=0.4)
 
-    
-network = create_network(6*number_of_lag,64,12,Adam(0.001))
-train(network,(X_train,y_train),(X_test,y_test),(X_validation,y_validation),num_epochs_without_change=100)
+#test()
+hidden_layer_neuron = [1,(6*number_of_lag+12)/4,(6*number_of_lag+12)/2,(6*number_of_lag+12)*3/4,(6*number_of_lag+12)*2,(6*number_of_lag+12)*4,(6*number_of_lag+12)*8]
+alpha = [0.001,0.003,0.005,0.008,0.01]
+activation_funcions=["relu","linear","sigmoid","hard_sigmoid","tanh","elu"]
+regulizers=[l2(0.01),l2(0.),l2(0.1)]
+print(hidden_layer_neuron)
+force_brute_tunnig((X_train,y_train),(X_test,y_test),(X_validation,y_validation),10,(6*number_of_lag,12),hidden_layer_neuron,alpha,activation_funcions,regulizers)
 
-#print(X_train.shape)
-#print(X_train)
-#print(y_train.shape)

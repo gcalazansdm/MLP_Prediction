@@ -14,7 +14,7 @@ answers_path='Data/UBE_Results.csv'
 number_of_lag=8
 
 #Determina um limiar de defasagem para os valores minimos para casos onde os valores sejam diferentes do que o esperado
-min_lag=.8
+min_lag=1
 max_lag=1
 
 #definie os limiares para a padrinização
