@@ -13,6 +13,7 @@ import numpy as np
 
 import functools
 import sys
+import os
 
 def calculateErrorPerNeuron(values,indexes):
     acummulated_error = np.mean(np.power(values[:,3:10] - indexes[:,3:10],2))
@@ -66,6 +67,10 @@ def updateBar(progress,toolbar_width,loss,start=0):
     sys.stdout.write("\b" * (len(write)+1)) # return to start of line, after '['
 
 def save_weights(model,name):
+    file_ = str(name)+".h5"
+    directory = os.path.split(file_)[0]
+    if not os.path.exists(directory):
+       os.makedirs(directory)
     model.save_weights(str(name)+".h5") 
 
 def trysave(test_loss,network,epoch,best_loss,printing=False):        

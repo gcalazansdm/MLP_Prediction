@@ -45,6 +45,11 @@ def train(network, train_base,test_base,val_base,batch_size=20,num_epochs_withou
     oldLabels = [[],[],[]]
     oldValLabels = [[],[],[]]
     oldTrainLabels = [[],[],[]]
+
+    directory = path_graphs
+    if not os.path.exists(directory):
+       os.makedirs(directory)
+
     while(not Stop):
         
         epoch_start =  datetime.datetime.now()
