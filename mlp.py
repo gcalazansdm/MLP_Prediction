@@ -64,10 +64,12 @@ y_temp = unnormalize_6_rows((Answers_min_values,Answers_max_values),y_temp)
 X_test, X_validation, y_test, y_validation = train_test_split(X_temp, y_temp,test_size=0.4)
 
 #test()
-hidden_layer_neuron = [1,(6*number_of_lag+12)/4,(6*number_of_lag+12)/2,(6*number_of_lag+12)*3/4,(6*number_of_lag+12)*2,(6*number_of_lag+12)*4,(6*number_of_lag+12)*8]
-alpha = [0.001,0.003,0.005,0.008,0.01]
-activation_funcions=["relu","linear","sigmoid","hard_sigmoid","tanh","elu"]
-regulizers=[l2(0.01),l2(0.),l2(0.1)]
-print(hidden_layer_neuron)
-force_brute_tunnig((X_train,y_train),(X_test,y_test),(X_validation,y_validation),10,(6*number_of_lag,12),hidden_layer_neuron,alpha,activation_funcions,regulizers)
+names = ["Neurons","Alpha","Activation01","Activation02","Regulaizer01","Regulaizer02"]
+parameters_test=[[(6*number_of_lag+12)*0.85] ,[0.0001], ["hard_sigmoid"], ["sigmoid"],[None], [None,l2(0.01),l2(0.),l2(0.1)]]
+parameters = [[1.],[parameters_test[1][0]],["sigmoid"],["sigmoid"],[None],[None]]
+
+for i in range(0,len(parameters)):
+    parameters[i] = parameters_test[i]    
+    parameters = force_brute_tunnig((X_train,y_train),(X_test,y_test),(X_validation,y_validation),50,(6*number_of_lag,12),parameters,names[i])
+
 

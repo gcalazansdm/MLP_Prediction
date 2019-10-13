@@ -23,15 +23,52 @@ import math
 import datetime
 import os
 
-def force_brute_tunnig(train_base,test_base,validation_base,num_epochs_without_change,boders_neurons,hidden_layer_neuron,alpha,activation_funcions,regulizers):
+def force_brute_tunnig(train_base, test_base, validation_base, num_epochs_without_change, boders_neurons, parameters,test_name):
+    hidden_layer_neuron = parameters[0]
+    print(parameters)
+    alpha = parameters[1]
+    activation_funcions_1_layer = parameters[2]
+    activation_funcions_2_layer = parameters[3]
+    regulizers_1 = parameters[4]
+    regulizers_2 = parameters[5]
+    
+    errors = []
+    epochs = []
     num_test = 0
+    best_error = np.inf
+    best_config= None
     print("iniciando")
     for hl in hidden_layer_neuron:
-       network = create_network(boders_neurons[0], round(hl),boders_neurons[1],Adam(alpha[0]),activation_funcions[0],activation_funcions[1],regulizers[0],regulizers[0])
-       error = train(network,train_base,test_base,validation_base,num_epochs_without_change=num_epochs_without_change,printing=True)
-       print("teste",num_test,"Numero de neuronios ",hl,"Error",error)
-       num_test += 1
-    h5_name = tempName
+        for alpha_ in alpha:
+            for af1l in activation_funcions_1_layer:
+                for af2l in activation_funcions_2_layer:
+                    for r1 in regulizers_1:
+                        for r2 in regulizers_2:
+                            start_time = datetime.datetime.now()
+                            network = create_network(boders_neurons[0], round(hl), boders_neurons[1], Adam(alpha_), af1l, af2l, r1, r2)
+                            start_time = datetime.datetime.now()
+                            error,epoch = train(network,train_base,test_base,validation_base,num_epochs_without_change=num_epochs_without_change,printing=True)
+                            print(round(hl), alpha_, af1l, af2l, r1, r2)
+                            print("teste\t%d\tError\t%f\tEpochs\t%d\ttime\t%s" %(num_test,error,epoch,datetime.datetime.now() - start_time))
+                            num_test += 1
+                            if(best_error > error):
+                                best_error = error
+                                best_config = [[hl],[alpha_],[af1l],[af2l],[r1],[r2]]
+
+                            errors.append(error)    
+                        
+                            plt.plot(errors,'r',label='Erro')
+                            plt.ylabel(test_name)
+                            plt.savefig(os.path.join(path_graphs,test_name +'.png'))
+                            plt.clf()                            
+
+                            epochs.append(epoch)                            
+
+                            plt.plot(epochs,'r',label='Erro')
+                            plt.ylabel(test_name)
+                            plt.savefig(os.path.join(path_graphs,test_name +'_epochs.png'))
+                            plt.clf()
+    return best_config
 
 def train(network, train_base,test_base,val_base,batch_size=20,num_epochs_without_change=100,printing=True):
     start_time = datetime.datetime.now()
@@ -108,18 +145,16 @@ def train(network, train_base,test_base,val_base,batch_size=20,num_epochs_withou
             plt.clf()
         h+=1
         Stop = num_error_starvation >= num_epochs_without_change
-    return best_loss
+    return best_loss,h
 
 def create_network(input_size,hidden_layer_neurons,output_size,optimizer,activation_1_layer,activation_2_layer,regulazier_1_layer,regulazier_2_layer):
     classifier = Sequential()
 
     #camada escondida
-    classifier.add(Dense(units = hidden_layer_neurons, activation=activation_1_layer, input_dim= input_size,kernel_regularizer=regulazier_1_layer,
-                activity_regularizer=l1(0.01)))
+    classifier.add(Dense(units = hidden_layer_neurons, activation=activation_1_layer, input_dim= input_size,kernel_regularizer=regulazier_1_layer))
     
     #camada de saida
-    classifier.add(Dense(units = output_size, activation=activation_2_layer,kernel_regularizer=regulazier_2_layer,
-                activity_regularizer=l1(0.01)))
+    classifier.add(Dense(units = output_size, activation=activation_2_layer,kernel_regularizer=regulazier_2_layer))
     
     classifier.compile( optimizer = optimizer, loss = 'MAE',metrics = ['mean_absolute_percentage_error','MSE']  )
   
