@@ -1,8 +1,11 @@
-from keras.models import Sequential
+from keras.models import Model
 
+from keras.layers import Input
 from keras.layers import Dense
 
 from keras.optimizers import Adam
+
+from keras.initializers import glorot_uniform
 
 from keras.regularizers import l2
 from keras.regularizers import l1
@@ -16,12 +19,26 @@ from utils import calculateErrorPerNeuron
 from utils import test_network
 from utils import trysave
 
+
 import matplotlib.pyplot as plt
 import numpy as np
 
 import math 
 import datetime
 import os
+
+    
+def load_network(boders_neurons,parameters):
+    hidden_layer_neuron = round(parameters[0][0])
+    print(parameters)
+    alpha = parameters[1][0]
+    activation_1_layer = parameters[2][0]
+    activation_2_layer = parameters[3][0]
+    regulizers_1 = parameters[4][0]
+    regulizers_2 = parameters[5][0]
+    network = create_network(boders_neurons[0],hidden_layer_neuron,boders_neurons[1],Adam(alpha),activation_1_layer,activation_2_layer,regulizers_1,regulizers_2)    
+    network.load_weights(h5_name + ".h5")
+    return network
 
 def force_brute_tunnig(train_base, test_base, validation_base, num_epochs_without_change, boders_neurons, parameters,test_name):
     hidden_layer_neuron = parameters[0]
@@ -148,14 +165,16 @@ def train(network, train_base,test_base,val_base,batch_size=20,num_epochs_withou
     return best_loss,h
 
 def create_network(input_size,hidden_layer_neurons,output_size,optimizer,activation_1_layer,activation_2_layer,regulazier_1_layer,regulazier_2_layer):
-    classifier = Sequential()
+    seed_ = 23
+    input_layer = Input(shape=(input_size,))
 
     #camada escondida
-    classifier.add(Dense(units = hidden_layer_neurons, activation=activation_1_layer, input_dim= input_size,kernel_regularizer=regulazier_1_layer))
+    hidden_layer = Dense(units = hidden_layer_neurons, kernel_initializer=glorot_uniform(seed=seed_), activation=activation_1_layer, kernel_regularizer=regulazier_1_layer)(input_layer)
     
     #camada de saida
-    classifier.add(Dense(units = output_size, activation=activation_2_layer,kernel_regularizer=regulazier_2_layer))
+    output_layer = Dense(units = output_size, kernel_initializer=glorot_uniform(seed=seed_)    , activation=activation_2_layer,kernel_regularizer=regulazier_2_layer)(hidden_layer)
     
-    classifier.compile( optimizer = optimizer, loss = 'MAE',metrics = ['mean_absolute_percentage_error','MSE']  )
+    classifier = Model(inputs=input_layer, outputs=output_layer)
+    classifier.compile( optimizer = optimizer, loss = 'MSE',metrics = ['mean_absolute_percentage_error','MSE']  )
   
     return classifier

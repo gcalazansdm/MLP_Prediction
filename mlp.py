@@ -13,21 +13,15 @@ from constants import Answers_max_values
 from constants import labels
 
 from network import force_brute_tunnig
+from network import load_network
 
 from utils import unnormalize_6_rows
+from utils import test_values
 
 from Statistics import normalize
 from Statistics import unnormalize,unnormalize_unitary
 from Statistics import MakeLag
 
-#def test():
-#    i = 6
-#    test = np.array([np.arange(i),np.arange(i,i*2),np.arange(i*2,i*3),np.arange(i*3,i*4),np.arange(i*4,i*5),np.arange(i*5,i*6)])
-#    print(test)
-#    ex,min_,max_ = normalize(test,is_numpy=True)
-#    print(ex, test,min_,max_)
-#    ex = unnormalize_unitary((min_,max_),ex)
-#    print(ex)
 #csv de entrada
 input_csv = reader.read_csv(dataset_path)
 result_csv = reader.read_csv(answers_path) 
@@ -62,14 +56,20 @@ X_temp = unnormalize_6_rows((min_values,max_values),X_temp,True)
 y_temp = unnormalize_6_rows((Answers_min_values,Answers_max_values),y_temp)
 
 X_test, X_validation, y_test, y_validation = train_test_split(X_temp, y_temp,test_size=0.4)
+def train():
+    #test()
+    names = ["Neurons","Alpha","Activation01","Activation02","Regulaizer01","Regulaizer02"]
+    parameters_test=[[(6*number_of_lag+12)*0.85] ,[0.0001], ["hard_sigmoid"], ["sigmoid"],[l2(0),l2(0.01),l2(0.1),l2(1)], [l2(0),l2(0.01),l2(0.1),l2(1)]]
+    parameters = [[(6*number_of_lag+12)*0.8],[parameters_test[1][0]],["hard_sigmoid"],["sigmoid"],[None],[None]]
 
-#test()
-names = ["Neurons","Alpha","Activation01","Activation02","Regulaizer01","Regulaizer02"]
-parameters_test=[[(6*number_of_lag+12)*0.85] ,[0.0001], ["hard_sigmoid"], ["sigmoid"],[None], [None,l2(0.01),l2(0.),l2(0.1)]]
-parameters = [[1.],[parameters_test[1][0]],["sigmoid"],["sigmoid"],[None],[None]]
+    for i in range(4,len(parameters)):
+        parameters[i] = parameters_test[i]    
+        parameters = force_brute_tunnig((X_train,y_train),(X_test,y_test),(X_validation,y_validation),50,(6*number_of_lag,12),parameters,names[i])
 
-for i in range(0,len(parameters)):
-    parameters[i] = parameters_test[i]    
     parameters = force_brute_tunnig((X_train,y_train),(X_test,y_test),(X_validation,y_validation),50,(6*number_of_lag,12),parameters,names[i])
 
-
+def test():
+    parameters_test=[[48] ,[0.0001], ["hard_sigmoid"], ["sigmoid"],[None], [None]]
+    network = load_network((6*number_of_lag,12),parameters_test)
+    print(test_values(network,X_test,y_test))
+train()

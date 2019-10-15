@@ -8,6 +8,7 @@ from constants import std_min
 from constants import std_max
 from constants import number_of_lag
 
+	
 def MakeLag(array,ArrayName,alpha):
     original = reader.DataFrame(data={ArrayName:array[ArrayName]})
     rVal = original
@@ -65,6 +66,6 @@ def unnormalize_6_rows(outliers,normalized_vector,lag=False):
     
 def unnormalize_unitary(outliers,elem):
     return (elem-std_min)/(std_max-std_min)*(outliers[1]-outliers[0]) + outliers[0]
-	
+    
 def unnormalize(outliers,elem):
     return np.multiply(np.divide(np.subtract(elem,std_min),std_max-std_min),np.subtract(outliers[1],outliers[0])) + outliers[0]

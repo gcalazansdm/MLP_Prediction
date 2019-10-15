@@ -15,6 +15,17 @@ import functools
 import sys
 import os
 
+def test_values(network,values,labels=None):
+    normalized_values = normalize_6_rows((min_values,max_values),values)
+    results = network.predict(normalized_values)
+    
+    unnormalized_results = unnormalize_6_rows((Answers_min_values,Answers_max_values),results)
+    
+    test_loss = None
+    if(labels is not None):
+        test_loss = calculateErrorPerNeuron(unnormalized_results,labels)
+    
+    return (unnormalized_results,test_loss)
 def calculateErrorPerNeuron(values,indexes):
     acummulated_error = np.mean(np.power(values[:,3:10] - indexes[:,3:10],2))
     mse_error = np.mean(np.power(values - indexes,2))
