@@ -95,11 +95,14 @@ def train(network, train_base,test_base,val_base,batch_size=20,num_epochs_withou
     num_error_starvation=0
     lenBase = len(train_base[0])
     maxLen = math.ceil(lenBase/float(batch_size))
-    labels = ["Por neuronio","MSE","MAPE"]
-    oldLabels = [[],[],[]]
-    oldValLabels = [[],[],[]]
-    oldTrainLabels = [[],[],[]]
-
+    labels = ["MSE per neuron","MSE","MAPE","MAPE per neuron"]
+    oldLabels = []
+    oldValLabels = []
+    oldTrainLabels = []
+    for i in range(0,len(labels)):
+        oldLabels.append([])
+        oldValLabels.append([])
+        oldTrainLabels.append([])
     directory = path_graphs
     if not os.path.exists(directory):
        os.makedirs(directory)

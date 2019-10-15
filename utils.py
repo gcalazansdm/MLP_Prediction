@@ -27,10 +27,13 @@ def test_values(network,values,labels=None):
     
     return (unnormalized_results,test_loss)
 def calculateErrorPerNeuron(values,indexes):
-    acummulated_error = np.mean(np.power(values[:,3:10] - indexes[:,3:10],2))
+    acummulated_square_error = np.mean(np.power(values[:,3:10] - indexes[:,3:10],2))
+    acummulated_absolute_error = np.mean(np.divide(np.absolute(values[:,3:10] - indexes[:,3:10]),np.absolute(indexes[:,3:10]))*100)
+	
     mse_error = np.mean(np.power(values - indexes,2))
     mape_error = np.mean(np.divide(np.absolute(values - indexes),np.absolute(indexes))*100)
-    return [acummulated_error,mse_error,mape_error]
+	
+    return [acummulated_square_error,mse_error,mape_error,acummulated_absolute_error]
 
 def test_network(base,network,normalize = True):
     normalized_values = None
@@ -85,7 +88,7 @@ def save_weights(model,name):
     model.save_weights(str(name)+".h5") 
 
 def trysave(test_loss,network,epoch,best_loss,printing=False):        
-    targetloss = test_loss[2]
+    targetloss = test_loss[3]
     rLoss = best_loss
     if(targetloss > 0. and best_loss > targetloss):
         save_weights(network,h5_name)
